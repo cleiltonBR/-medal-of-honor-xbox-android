@@ -1,0 +1,55 @@
+name: Android ARM64 Toolchain Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/android-arm64.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  android-arm64:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android NDK
+        run: sdkmanager --install "ndk;27.2.12479018"
+
+      - name: Compile ARM64 native library
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          NDK="$ANDROID_HOME/ndk/27.2.12479018"
+
+          CLANG="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang++"
+
+          mkdir -p artifacts
+
+          cat > probe.cpp <<'EOF'
+          extern "C" __attribute__((visibility("default")))
+          int moha_arm64_probe() {
+              return 64;
+          }
+          EOF
+
+          "$CLANG" -shared -fPIC -O2 probe.cpp -o artifacts/libmoha_arm64_probe.so
+
+          file artifacts/libmoha_arm64_probe.so
+
+      - name: Upload ARM64 library
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-arm64-probe
+          path: artifacts/libmoha_arm64_probe.so
+          if-no-files-found: error
