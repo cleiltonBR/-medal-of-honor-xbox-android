@@ -1,3 +1,4 @@
+
 name: Android ARM64 Toolchain Test
 
 on:
@@ -21,6 +22,8 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
       - name: Install Android NDK
         run: sdkmanager --install "ndk;27.2.12479018"
@@ -31,7 +34,6 @@ jobs:
           set -euo pipefail
 
           NDK="$ANDROID_HOME/ndk/27.2.12479018"
-
           CLANG="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang++"
 
           mkdir -p artifacts
@@ -53,3 +55,4 @@ jobs:
           name: android-arm64-probe
           path: artifacts/libmoha_arm64_probe.so
           if-no-files-found: error
+          
