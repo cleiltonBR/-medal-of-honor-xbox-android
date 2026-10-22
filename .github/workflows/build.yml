@@ -1,36 +1,44 @@
-# This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Xbox Recomp - Linux Validation
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+permissions:
+  contents: read
+
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+  build-runtime:
+    runs-on: ubuntu-24.04
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Checkout project
+        uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Checkout xboxrecomp
+        uses: actions/checkout@v4
+        with:
+          repository: sp00nznet/xboxrecomp
+          path: third_party/xboxrecomp
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Install dependencies
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential cmake ninja-build \
+            libsdl2-dev libepoxy-dev libssl-dev \
+            ffmpeg python3 python3-pip
+
+      - name: Install Python dependency
+        run: python3 -m pip install capstone
+
+      - name: Configure runtime
+        run: |
+          cmake -S third_party/xboxrecomp \
+            -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Compile runtime libraries
+        run: cmake --build build --parallel 2
