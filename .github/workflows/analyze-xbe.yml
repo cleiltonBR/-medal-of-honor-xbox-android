@@ -1,0 +1,13 @@
+name: Analyze Xbox Executable
+
+on:
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show analysis instructions
+        run: |
+          echo "Workflow criado com sucesso."
+          echo "A analise do arquivo default.xbe ainda precisa ser configurada."
