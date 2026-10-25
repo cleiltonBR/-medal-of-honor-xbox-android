@@ -1,6 +1,7 @@
 #include "xbe_loader.h"
 
 #include <limits>
+#include <utility>
 
 namespace moha::runtime {
 namespace {
@@ -33,14 +34,18 @@ bool ParseXbeImage(const std::uint8_t* b, std::size_t size,
     XbeImageInfo info{};
     std::uint32_t section_count = 0;
     std::uint32_t section_table = 0;
+    std::uint32_t encoded_entry_point = 0;
 
     if (!Read32(b, size, 0x104, &info.base_address) ||
         !Read32(b, size, 0x108, &info.header_size) ||
         !Read32(b, size, 0x10C, &info.image_size) ||
         !Read32(b, size, 0x11C, &section_count) ||
         !Read32(b, size, 0x120, &section_table) ||
-        !Read32(b, size, 0x128, &info.entry_point))
+        !Read32(b, size, 0x128, &encoded_entry_point))
         return Fail(error, "Cabecalho XBE incompleto.");
+
+    // No XBE original, o ponto de entrada e codificado com XOR.
+    info.entry_point = encoded_entry_point ^ 0xA8FC57ABu;
 
     if (info.header_size < 0x178 || info.header_size > size)
         return Fail(error, "Tamanho de cabecalho XBE invalido.");

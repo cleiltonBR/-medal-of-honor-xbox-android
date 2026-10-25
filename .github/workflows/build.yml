@@ -34,6 +34,13 @@ jobs:
       - name: Install Python dependency
         run: python3 -m pip install capstone
 
+      - name: Compile project XBE parser
+        run: |
+          c++ -std=c++17 -Wall -Wextra -Werror \
+            -I app/src/main/cpp/runtime \
+            -c app/src/main/cpp/runtime/xbe_loader.cpp \
+            -o /tmp/xbe_loader.o
+
       - name: Configure runtime
         run: |
           cmake -S third_party/xboxrecomp \
