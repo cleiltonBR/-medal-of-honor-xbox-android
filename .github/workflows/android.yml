@@ -32,6 +32,15 @@ jobs:
           yes | "$SDKMANAGER" --licenses
           "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
 
+      - name: Test Xbox XBE parser
+        run: |
+          c++ -std=c++17 -Wall -Wextra -Werror \\
+            -I app/src/main/cpp/runtime \\
+            app/src/main/cpp/runtime/xbe_loader.cpp \\
+            tests/xbe_loader_test.cpp \\
+            -o /tmp/xbe_loader_test
+          /tmp/xbe_loader_test
+
       - name: Build ARM64 debug APK
         run: gradle --no-daemon assembleDebug
 
