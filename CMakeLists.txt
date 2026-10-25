@@ -24,6 +24,7 @@ target_include_directories(moha_recompiled PUBLIC
 add_library(moha_android SHARED
     src/main.cpp
     app/src/main/cpp/runtime/xbox_guest_memory.cpp
+    app/src/main/cpp/runtime/game_profile.cpp
 )
 
 target_include_directories(moha_android PRIVATE
