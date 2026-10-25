@@ -1,0 +1,85 @@
+#include "xbox_guest_memory.h"
+
+#include <limits>
+#include <memory>
+#include <mutex>
+
+namespace moha::runtime {
+namespace {
+
+constexpr std::uint32_t kGuestMemoryBase = 0x80000000u;
+
+std::unique_ptr<std::uint8_t[]> g_memory;
+std::size_t g_memory_size = 0;
+std::mutex g_memory_mutex;
+
+} // namespace
+
+bool InitializeGuestMemory(std::size_t size) {
+    if (size == 0 ||
+        size > std::numeric_limits<std::uint32_t>::max()) {
+        return false;
+    }
+
+    std::lock_guard<std::mutex> lock(g_memory_mutex);
+
+    std::unique_ptr<std::uint8_t[]> memory(
+        new (std::nothrow) std::uint8_t[size]{}
+    );
+
+    if (!memory) {
+        return false;
+    }
+
+    g_memory = std::move(memory);
+    g_memory_size = size;
+    return true;
+}
+
+void ShutdownGuestMemory() {
+    std::lock_guard<std::mutex> lock(g_memory_mutex);
+    g_memory.reset();
+    g_memory_size = 0;
+}
+
+bool IsGuestRangeValid(std::uint32_t address, std::size_t length) {
+    std::lock_guard<std::mutex> lock(g_memory_mutex);
+
+    if (!g_memory || address < kGuestMemoryBase) {
+        return false;
+    }
+
+    const std::uint64_t offset =
+        static_cast<std::uint64_t>(address) - kGuestMemoryBase;
+
+    if (offset > g_memory_size) {
+        return false;
+    }
+
+    return length <= g_memory_size - static_cast<std::size_t>(offset);
+}
+
+void* TranslateGuestAddress(std::uint32_t address, std::size_t length) {
+    std::lock_guard<std::mutex> lock(g_memory_mutex);
+
+    if (!g_memory || address < kGuestMemoryBase) {
+        return nullptr;
+    }
+
+    const std::uint64_t offset =
+        static_cast<std::uint64_t>(address) - kGuestMemoryBase;
+
+    if (offset > g_memory_size ||
+        length > g_memory_size - static_cast<std::size_t>(offset)) {
+        return nullptr;
+    }
+
+    return g_memory.get() + static_cast<std::size_t>(offset);
+}
+
+std::size_t GuestMemorySize() {
+    std::lock_guard<std::mutex> lock(g_memory_mutex);
+    return g_memory_size;
+}
+
+} // namespace moha::runtime
