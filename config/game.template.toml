@@ -1,0 +1,26 @@
+# Modelo para um novo jogo do Xbox Clássico.
+# Os valores precisam ser confirmados a partir do XBE.
+# Este arquivo é um modelo; o runtime atual ainda não o carrega.
+
+[game]
+id = "novo-jogo"
+name = "Nome do jogo"
+xbe_path = "assets/default.xbe"
+region = "unknown"
+
+[recompilation]
+tool = "XboxXBE-Recomp"
+output_directory = "generated"
+target_architecture = "arm64-v8a"
+
+[runtime]
+platform = "android"
+graphics_backend = "vulkan"
+audio_backend = "pending"
+guest_memory_base = "detect-from-xbe"
+entrypoint = "detect-from-xbe"
+
+[compatibility]
+xdk_version = "detect-from-xbe"
+unresolved_imports = "must-be-audited"
+unresolved_functions = "must-be-audited"
