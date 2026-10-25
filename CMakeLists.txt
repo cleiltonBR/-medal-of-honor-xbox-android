@@ -38,5 +38,11 @@ target_compile_definitions(moha_android PRIVATE
 )
 
 target_link_libraries(moha_android PRIVATE
+    moha_recompiled
     ${android-log}
+)
+
+# Fail the Android shared-library link if runtime symbols are unresolved.
+target_link_options(moha_android PRIVATE
+    "-Wl,--no-undefined"
 )
