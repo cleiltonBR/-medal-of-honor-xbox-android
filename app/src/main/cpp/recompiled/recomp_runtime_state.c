@@ -36,15 +36,6 @@ RECOMP_TLS RecompXmm g_xmm5 = {0};
 RECOMP_TLS RecompXmm g_xmm6 = {0};
 RECOMP_TLS RecompXmm g_xmm7 = {0};
 
-RECOMP_TLS RecompMmx g_mm0 = {0};
-RECOMP_TLS RecompMmx g_mm1 = {0};
-RECOMP_TLS RecompMmx g_mm2 = {0};
-RECOMP_TLS RecompMmx g_mm3 = {0};
-RECOMP_TLS RecompMmx g_mm4 = {0};
-RECOMP_TLS RecompMmx g_mm5 = {0};
-RECOMP_TLS RecompMmx g_mm6 = {0};
-RECOMP_TLS RecompMmx g_mm7 = {0};
-
 /* Diagnóstico de chamadas indiretas. */
 volatile uint32_t g_icall_trace[ICALL_TRACE_SIZE] = {0};
 volatile uint32_t g_icall_trace_idx = 0;
