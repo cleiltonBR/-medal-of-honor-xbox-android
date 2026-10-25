@@ -23,6 +23,11 @@ target_include_directories(moha_recompiled PUBLIC
 
 add_library(moha_android SHARED
     src/main.cpp
+    app/src/main/cpp/runtime/xbox_guest_memory.cpp
+)
+
+target_include_directories(moha_android PRIVATE
+    app/src/main/cpp/runtime
 )
 
 find_library(android-log log)
