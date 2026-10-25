@@ -1,4 +1,5 @@
 #include "xbe_loader.h"
+#include "xbox_guest_memory.h"
 
 #include <cassert>
 #include <cstdint>
@@ -50,6 +51,24 @@ int main() {
     assert(info.entry_point == base + 0x1000);
     assert(info.sections.size() == 1);
     assert(info.sections[0].name == "test");
+
+    for (std::size_t i = 0; i < 0x20; ++i)
+        b[0x280 + i] = static_cast<std::uint8_t>(i + 1);
+
+    assert(moha::runtime::InitializeGuestMemory(
+        info.image_size, info.base_address));
+    assert(moha::runtime::LoadXbeSections(
+        b.data(), b.size(), info, &error));
+
+    auto* loaded = static_cast<std::uint8_t*>(
+        moha::runtime::TranslateGuestAddress(base + 0x1000, 0x100));
+    assert(loaded != nullptr);
+    for (std::size_t i = 0; i < 0x20; ++i)
+        assert(loaded[i] == static_cast<std::uint8_t>(i + 1));
+    for (std::size_t i = 0x20; i < 0x100; ++i)
+        assert(loaded[i] == 0);
+
+    moha::runtime::ShutdownGuestMemory();
 
     b[0] = 'Z';
     assert(!ParseXbeImage(b.data(), b.size(), &info, &error));

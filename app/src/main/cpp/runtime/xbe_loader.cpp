@@ -1,5 +1,7 @@
 #include "xbe_loader.h"
+#include "xbox_guest_memory.h"
 
+#include <cstring>
 #include <limits>
 #include <utility>
 
@@ -115,6 +117,58 @@ bool ParseXbeImage(const std::uint8_t* b, std::size_t size,
         return Fail(error, "Ponto de entrada fora da imagem.");
 
     *out = std::move(info);
+    if (error) error->clear();
+    return true;
+}
+
+
+bool LoadXbeSections(const std::uint8_t* bytes, std::size_t size,
+                    const XbeImageInfo& image, std::string* error) {
+    if (!bytes)
+        return Fail(error, "Dados XBE ausentes.");
+
+    if (image.image_size == 0 ||
+        !IsGuestRangeValid(image.base_address, image.image_size))
+        return Fail(error, "Memoria convidada nao cobre a imagem XBE.");
+
+    // Validate every section before writing any section.
+    for (const auto& section : image.sections) {
+        if (section.virtual_size == 0 ||
+            section.raw_size > section.virtual_size)
+            return Fail(error, "Tamanho de secao invalido.");
+
+        const std::uint64_t end =
+            static_cast<std::uint64_t>(section.virtual_address) +
+            section.virtual_size;
+        const std::uint64_t image_end =
+            static_cast<std::uint64_t>(image.base_address) +
+            image.image_size;
+
+        if (section.virtual_address < image.base_address ||
+            end > image_end || end < section.virtual_address ||
+            !IsGuestRangeValid(section.virtual_address,
+                               section.virtual_size))
+            return Fail(error, "Secao fora dos limites da memoria.");
+
+        if (section.raw_size != 0 &&
+            (section.raw_address > size ||
+             section.raw_size > size - section.raw_address))
+            return Fail(error, "Dados brutos fora do arquivo.");
+    }
+
+    for (const auto& section : image.sections) {
+        auto* destination = static_cast<std::uint8_t*>(
+            TranslateGuestAddress(section.virtual_address,
+                                  section.virtual_size));
+        if (!destination)
+            return Fail(error, "Falha ao traduzir endereco da secao.");
+
+        std::memset(destination, 0, section.virtual_size);
+        if (section.raw_size != 0)
+            std::memcpy(destination, bytes + section.raw_address,
+                        section.raw_size);
+    }
+
     if (error) error->clear();
     return true;
 }

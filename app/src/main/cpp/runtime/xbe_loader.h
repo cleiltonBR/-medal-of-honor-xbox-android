@@ -27,4 +27,7 @@ struct XbeImageInfo {
 bool ParseXbeImage(const std::uint8_t* bytes, std::size_t size,
                    XbeImageInfo* out, std::string* error);
 
+bool LoadXbeSections(const std::uint8_t* bytes, std::size_t size,
+                    const XbeImageInfo& image, std::string* error);
+
 }

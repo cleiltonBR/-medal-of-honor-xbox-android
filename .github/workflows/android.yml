@@ -34,7 +34,7 @@ jobs:
 
       - name: Test Xbox XBE parser
         run: |
-          c++ -std=c++17 -Wall -Wextra -Werror -I app/src/main/cpp/runtime app/src/main/cpp/runtime/xbe_loader.cpp tests/xbe_loader_test.cpp -o /tmp/xbe_loader_test
+          c++ -std=c++17 -Wall -Wextra -Werror -I app/src/main/cpp/runtime app/src/main/cpp/runtime/xbe_loader.cpp app/src/main/cpp/runtime/xbox_guest_memory.cpp tests/xbe_loader_test.cpp -o /tmp/xbe_loader_test
           /tmp/xbe_loader_test
 
       - name: Build ARM64 debug APK
